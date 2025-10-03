@@ -1,0 +1,29 @@
+import fetch from "node-fetch";
+
+export default async function handler(req, res) {
+  const { id } = req.query;
+  const X_AUTH = process.env.X_AUTH;
+  const X_UID  = process.env.X_UID;
+
+  if (!X_AUTH || !X_UID) {
+    return res.status(500).json({ error: "Missing env vars" });
+  }
+
+  try {
+    const apiRes = await fetch("https://api.joymi.live/api/lottery/fruitmachine/round/result", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-authorization": X_AUTH,
+        "x-uid": X_UID,
+        "Origin": "http://localhost:8629"
+      },
+      body: JSON.stringify({ roundId: Number(id) })
+    });
+    const json = await apiRes.json();
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.status(apiRes.status).json(json);
+  } catch(err){
+    res.status(500).json({ error: err.message });
+  }
+}
